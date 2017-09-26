@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Chat</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-latest.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <style media="screen">
+      body{
+        margin-top: 20px;
+      }
+      #messageArea{
+        display: none;
+      }
+      .float-r{
+        float: right;
+      }
+      @media screen and (min-width: 768px) {
+          .users-box{
+            position: fixed;
+            left: 0px;
+          }
+          .users-messages{
+            padding-left: 240px;
+          }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="row" id="userArea">
+        <div class="col-md-4 col-xs-10 col-sm-6">
+          <form id="userForm">
+            <div class="form-group">
+              <label>Enter username</label>
+              <input id="username" class="form-control"></input>
+              <br>
+              <input type="submit" class="btn btn-primary" value="Login">
+            </div>
+          </form>
+        </div>
+      </div>
+      <div id="messageArea" class="row">
+        <div class="col-md-3 col-xs-8 col-sm-3 users-box">
+          <div class="well">
+            <h3>Users Online</h3>
+            <ul class="list-group" id="users"></ul>
+          </div>
+        </div>
+        <div class="col-md-10 col-xs-12 col-sm-12 users-messages">
+          <div class="chat" id="chat"></div>
+          <form id="messageForm">
+            <div class="form-group">
+              <label class="col-md-12 col-xs-12 col-sm-12">Enter message</label>
+              <textarea id="message" rows="8" cols="80" class="form-control"></textarea>
+              <br>
+              <input type="submit" class="btn btn-primary" value="send message">
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      $(document).ready(function(){
+        var socket = io.connect();
+        var $messageForm = $('#messageForm');
+        var $message = $('#message');
+        var $messageArea = $('#messageArea');
+        var $chat = $('#chat');
+        var $userForm = $('#userForm');
+        var $userArea = $('#userArea');
+        var $username = $('#username');
+        var $users = $('#users');
+
+        $messageForm.submit(function(event){
+          event.preventDefault();
+          socket.emit('send message', $message.val());
+          $message.val('');
+        });
+        $messageForm.keypress(function(event){
+            if (event.which == 13) {
+                event.preventDefault();
+                socket.emit('send message', $message.val());
+                $message.val('');
+            }
+        });
+
+        socket.on('new message', function(data){
+          if ($('#username').val() == data.user) {
+            $chat.append('<div class="well col-xs-7 col-sm-7 col-md-7 float-r"><strong>'+data.user+':  </strong>'+data.msg+'</div>');
+          }else{
+            $chat.append('<div class="well col-xs-7 col-sm-7 col-md-7"><strong>'+data.user+':  </strong>'+data.msg+'</div>');
+          }
+        });
+
+        $userForm.submit(function(event){
+          event.preventDefault();
+          socket.emit('new user', $username.val(), function(data){
+            if(data){
+              $userArea.hide();
+              $messageArea.fadeIn();
+            }
+          });
+        });
+        $userForm.keypress(function(event){
+            if (event.which == 13) {
+                event.preventDefault();
+                socket.emit('new user', $username.val(), function(data){
+                    if(data){
+                        $userArea.hide();
+                        $messageArea.fadeIn();
+                    }
+                });
+            }
+        });
+
+        socket.on('get users', function(data){
+          var html = '';
+          for(i = 0; i < data.length; i++){
+            html += '<li class="list-group-item">'+data[i]+'</li>'
+          }
+          $users.html(html);
+        });
+      });
+    </script>
+  </body>
+</html>

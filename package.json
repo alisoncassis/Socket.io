@@ -1,0 +1,24 @@
+{
+  "name": "node_apresentacao",
+  "version": "1.0.0",
+  "engines": {
+    "node": "6.10.2"
+  },
+  "description": "Socket.io chat",
+  "main": "app.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alisoncassis/socke.io.git"
+  },
+  "scripts": {
+    "start": "node app.js"
+  },
+  "author": "Gabriel e Alison",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.15.2",
+    "express-load": "^1.1.15",
+    "socket.io": "^1.7.3",
+    "socket.io-client": "^1.7.3"
+  }
+}
